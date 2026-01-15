@@ -4,6 +4,10 @@ const app = express();
 
 app.use(express.json());
 
+app.get('/health', (req, res) => {
+    res.send("Product Service is healthy!");
+});
+
 // We will store the fetched data here
 let products = [];
 

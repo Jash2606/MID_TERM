@@ -5,6 +5,11 @@ const app = express();
 app.use(express.json());
 const SECRET_KEY = "supersecretkey";
 
+// Health Route
+app.get('/health', (req, res) => {
+    res.send("Auth Service is healthy!");
+});
+
 // Login Route
 app.post('/login', (req, res) => {
     const { username, password } = req.body;

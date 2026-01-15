@@ -4,6 +4,10 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const app = express();
 const PORT = 8080;
 
+app.get('/health', (req, res) => {
+    res.send("API Gateway is healthy!");
+});
+
 app.get('/', (req, res) => {
     res.send("API Gateway is running!");
 });

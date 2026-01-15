@@ -4,6 +4,10 @@ const app = express();
 
 app.use(express.json());
 
+app.get('/health', (req, res) => {
+    res.send("Order Service is healthy!");
+});
+
 let orders = [];
 
 // Place an Order
