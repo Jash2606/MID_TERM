@@ -6,6 +6,7 @@
 
 The application is split into four distinct services, orchestrated via Docker Compose.
 
+<img width="2806" height="2294" alt="Untitled diagram-2026-01-15-084136" src="https://github.com/user-attachments/assets/85b6762a-cd71-45ae-a1ca-dd0007c0a566" />
 
 ## 🚀 Services Overview
 
