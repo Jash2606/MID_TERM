@@ -1,0 +1,15 @@
+{
+  "name": "shop-micro",
+  "version": "1.0.0",
+  "description": "**Shop-Micro** is a cloud-native e-commerce backend built with a **Microservices Architecture**. It demonstrates core DevOps and Backend engineering concepts, including **Service-to-Service communication**, **API Gateway routing**, and **Containerization**.",
+  "main": "test.js",
+  "scripts": {
+    "test": "node test.js",
+    "start": "docker-compose up --build",
+    "stop": "docker-compose down"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

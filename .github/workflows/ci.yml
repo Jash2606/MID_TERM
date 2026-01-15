@@ -1,0 +1,120 @@
+name: CI - Shop-Micro DevSecOps Pipeline
+
+on:
+  push:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  ci:
+    name: Build, Scan & Package
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      # Checkout Source Code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Setup Node.js Runtime
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      # Install Root Dependencies (for tests)
+
+      - name: Install Root Dependencies
+        run: npm ci
+
+      # Install Microservice Dependencies
+      - name: Install Microservice Dependencies
+        run: |
+          set -e
+          for dir in api-gateway auth-service product-service order-service; do
+            echo "Installing dependencies for $dir"
+            cd $dir
+            npm ci
+            cd ..
+          done
+
+      # Linting - Code Quality Gate
+      - name: Run ESLint (Per Microservice)
+        run: |
+          set -e
+          for dir in api-gateway auth-service product-service order-service; do
+            echo "Linting $dir"
+            cd $dir
+            npm run lint
+            cd ..
+          done
+
+      # SAST - CodeQL
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+      # SCA - Dependency Vulnerability Scan
+      - name: npm Audit (Supply Chain Security)
+        run: |
+          set -e
+          for dir in api-gateway auth-service product-service order-service; do
+            echo "Running npm audit for $dir"
+            cd $dir
+            npm audit --audit-level=high
+            cd ..
+          done
+
+      # Unit Tests (ROOT LEVEL)
+      - name: Run Unit Tests (Root Test Suite)
+        run: |
+          echo "Running root-level tests"
+          npm test
+
+      # Docker Build
+      - name: Build Docker Images
+        run: |
+          docker build -t shop-micro-api-gateway ./api-gateway
+          docker build -t shop-micro-auth-service ./auth-service
+          docker build -t shop-micro-product-service ./product-service
+          docker build -t shop-micro-order-service ./order-service
+
+      # Container Vulnerability Scan
+      - name: Trivy Scan - API Gateway Image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: shop-micro-api-gateway
+          severity: CRITICAL,HIGH
+          exit-code: 1
+
+      # Runtime Smoke Test
+      - name: Container Runtime Smoke Test
+        run: |
+          docker-compose up -d
+          echo "Waiting for services to start..."
+          sleep 20
+          curl -f http://localhost:8080/products
+          docker-compose down
+
+      # DockerHub Login
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Push Trusted Image
+      - name: Push API Gateway Image
+        run: |
+          docker tag shop-micro-api-gateway \
+            ${{ secrets.DOCKERHUB_USERNAME }}/shop-micro-api-gateway:latest
+          docker push \
+            ${{ secrets.DOCKERHUB_USERNAME }}/shop-micro-api-gateway:latest
