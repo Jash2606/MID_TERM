@@ -1,4 +1,4 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: deveops-shop-micro
+  name: shop-micro
