@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: <DOCKERHUB_USERNAME>/shop-micro-auth-service:latest
+          image: jash2606/shop-micro-auth-service:latest
           ports:
             - containerPort: 3001
 ---

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: order-service
-          image: <DOCKERHUB_USERNAME>/shop-micro-order-service:latest
+          image: jash2606/shop-micro-order-service:latest
           ports:
             - containerPort: 3003
           imagePullPolicy: Always
@@ -32,4 +32,3 @@ spec:
   ports:
     - port: 3003
       targetPort: 3003
-    
