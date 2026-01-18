@@ -84,7 +84,7 @@ jobs:
       # Start Services (Runtime Validation)
       - name: Start Services via Docker Compose
         run: |
-          docker-compose up -d
+          docker compose up -d
           echo "Waiting for services to become ready..."
           sleep 25
 
@@ -97,7 +97,7 @@ jobs:
       # Cleanup (Always Run)
       - name: Stop Services
         if: always()
-        run: docker-compose down
+        run: docker compose down
 
       # Container Vulnerability Scan
       - name: Trivy Scan - API Gateway Image
