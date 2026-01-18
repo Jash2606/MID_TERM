@@ -115,9 +115,13 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       # Push Trusted Image
-      - name: Push API Gateway Image
+      - name: Push All Images to DockerHub
         run: |
-          docker tag shop-micro-api-gateway \
-            ${{ secrets.DOCKERHUB_USERNAME }}/shop-micro-api-gateway:latest
-          docker push \
-            ${{ secrets.DOCKERHUB_USERNAME }}/shop-micro-api-gateway:latest
+          services=("api-gateway" "auth-service" "product-service" "order-service")
+
+          for service in "${services[@]}"; do
+            docker tag shop-micro-$service \
+              ${{ secrets.DOCKERHUB_USERNAME }}/shop-micro-$service:latest
+            docker push \
+              ${{ secrets.DOCKERHUB_USERNAME }}/shop-micro-$service:latest
+          done
