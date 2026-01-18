@@ -73,12 +73,6 @@ jobs:
             cd ..
           done
 
-      # Unit Tests (ROOT LEVEL)
-      - name: Run Unit Tests (Root Test Suite)
-        run: |
-          echo "Running root-level tests"
-          npm test
-
       # Docker Build
       - name: Build Docker Images
         run: |
@@ -87,6 +81,24 @@ jobs:
           docker build -t shop-micro-product-service ./product-service
           docker build -t shop-micro-order-service ./order-service
 
+      # Start Services (Runtime Validation)
+      - name: Start Services via Docker Compose
+        run: |
+          docker-compose up -d
+          echo "Waiting for services to become ready..."
+          sleep 25
+
+      # Integration / Smoke Tests (ROOT)
+      - name: Run Integration Smoke Tests
+        run: |
+          echo "Running integration smoke tests"
+          npm test
+
+      # Cleanup (Always Run)
+      - name: Stop Services
+        if: always()
+        run: docker-compose down
+
       # Container Vulnerability Scan
       - name: Trivy Scan - API Gateway Image
         uses: aquasecurity/trivy-action@master
@@ -94,15 +106,6 @@ jobs:
           image-ref: shop-micro-api-gateway
           severity: CRITICAL,HIGH
           exit-code: 1
-
-      # Runtime Smoke Test
-      - name: Container Runtime Smoke Test
-        run: |
-          docker-compose up -d
-          echo "Waiting for services to start..."
-          sleep 20
-          curl -f http://localhost:8080/products
-          docker-compose down
 
       # DockerHub Login
       - name: Login to DockerHub
