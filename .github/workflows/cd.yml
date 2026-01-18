@@ -1,0 +1,53 @@
+name: CD - Deploy Shop-Micro to Kubernetes (k3s)
+
+on:
+  workflow_run:
+    workflows: ["CI - Shop-Micro DevSecOps Pipeline"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    name: Deploy to EC2 Kubernetes
+    runs-on: ubuntu-latest
+
+    # ✅ Deploy ONLY if CI succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      # Checkout Repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Setup SSH Access
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key.pem
+          chmod 600 ~/.ssh/ec2_key.pem
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      # Deploy to Kubernetes (k3s)
+      - name: Apply Kubernetes Manifests
+        run: |
+          ssh -i ~/.ssh/ec2_key.pem \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+
+          set -e
+          export KUBECONFIG=~/.kube/config
+
+          echo "Applying Kubernetes manifests..."
+          kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f k8s/
+
+          echo "Waiting for API Gateway rollout..."
+          kubectl rollout status deployment/api-gateway -n shop-micro
+          EOF
+
+      # Dummy DAST / Runtime Validation
+      - name: Basic DAST Check
+        run: |
+          ssh -i ~/.ssh/ec2_key.pem \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
+            "curl -f http://localhost:30080/products"
+
