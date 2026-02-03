@@ -1,5 +1,5 @@
 # Use a lightweight Node.js version
-FROM node:18-alpine
+FROM node:18-alpine3.20
 
 # Set the working directory inside the container
 WORKDIR /app
