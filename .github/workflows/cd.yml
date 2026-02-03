@@ -46,6 +46,11 @@ jobs:
                 kubectl apply -f k8s/namespace.yaml
                 kubectl apply -f k8s/
 
+                kubectl rollout restart deployment/api-gateway -n shop-micro
+                kubectl rollout restart deployment/auth-service -n shop-micro
+                kubectl rollout restart deployment/product-service -n shop-micro
+                kubectl rollout restart deployment/order-service -n shop-micro
+
                 kubectl rollout status deployment/api-gateway -n shop-micro
                 kubectl rollout status deployment/auth-service -n shop-micro
                 kubectl rollout status deployment/product-service -n shop-micro
