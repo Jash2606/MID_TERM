@@ -5,7 +5,7 @@ const app = express();
 app.use(express.json());
 
 app.get('/health', (req, res) => {
-    res.send("Product Service is healthy!");
+    res.send("Product Service is healthy and up to date.. :)");
 });
 
 // We will store the fetched data here
